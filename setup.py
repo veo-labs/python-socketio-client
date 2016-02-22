@@ -16,7 +16,7 @@ setup(
     author_email='frederic.sureau@veo-labs.com',
     description='Socket.IO client',
     long_description=open('README.rst').read(),
-    packages=['socketio_client', 'socketio_client.transports'],
+    packages=['socketio_client'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
