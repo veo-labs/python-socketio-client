@@ -21,8 +21,7 @@ setup(
     include_package_data=True,
     platforms='any',
     install_requires=[
-        'six>=1.9.0',
-        'requests>=2.9.1',
+        'python-engineio-client>=0.1',
         'gevent>=1.0.2',
     ],
     classifiers=[
