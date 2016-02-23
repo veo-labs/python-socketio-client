@@ -135,7 +135,7 @@ class Manager(Emitter):
         self.state = 'closed'
         self.emit('close')
 
-        if self.reconnection and not self.skipping_reconnect:
+        if self.reconnection:
             self.reconnect()
 
     def skip_reconnect(self, value):
@@ -151,10 +151,15 @@ class Manager(Emitter):
         self.connect()
     
     def reconnect(self):
-        if self.reconnecting or self.skipping_reconnect:
+        logger.debug("Delay reconnect")
+        if self.reconnecting:
+            logger.debug("Already reconnecting")
             return
 
-        logger.debug("Delay reconnect")
+        if self.skipping_reconnect:
+            logger.debug("Skipping reconnect because user disconnected")
+            return
+
         self.reconnecting = True
         self.reconnect_task = self.start_task(self.do_reconnect, delay=self.reconnection_delay)
 
