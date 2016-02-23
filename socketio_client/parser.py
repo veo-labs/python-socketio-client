@@ -118,9 +118,9 @@ class Parser(object):
             bytes += packet.namespace
             if packet.id or data:
                 bytes += ','
-        if packet.id:
+        if packet.id is not None:
             bytes += six.text_type(packet.id)
-        if data:
+        if data is not None:
             bytes += json.dumps(data, separators=(',', ':'))
 
         return [bytes] + attachments
