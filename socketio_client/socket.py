@@ -47,7 +47,8 @@ class Socket(object):
 
         logger.debug("Sending disconnect")
         self.send_packet(Packet(Packet.DISCONNECT))
-        self.handle_disconnect()
+        self.handle_close()
+        self.cleanup_handlers()
 
     def on(self, *args, **kwargs):
         """Attach handler for event-type messages"""
@@ -100,7 +101,6 @@ class Socket(object):
         logger.debug("Closed")
         self.state = 'disconnected'
         self.socket_handlers.emit('disconnect')
-        self.cleanup_handlers()
 
     def handle_packet(self, packet):
         if packet.namespace != self.namespace:
