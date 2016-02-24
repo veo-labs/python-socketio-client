@@ -74,6 +74,9 @@ class Socket(object):
     def on_error(self, *args, **kwargs):
         return self.on_socket('error', *args, **kwargs)
 
+    def on_event(self, *args, **kwargs):
+        return self.on_socket('event', *args, **kwargs)
+
     def emit(self, *args, **kwargs):
         """Send event-type message
         If callback is sent, it will be called when the server want to respond
@@ -141,6 +144,7 @@ class Socket(object):
             kwargs['callback'] = self.create_ack_callback(packet.id)
 
         self.event_handlers.emit(*args, **kwargs)
+        self.socket_handlers.emit('event', *args, **kwargs)
 
     def handle_ack(self, packet):
         args = packet.data or []
