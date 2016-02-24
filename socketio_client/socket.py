@@ -35,6 +35,10 @@ class Socket(object):
         return self.manager.id
 
     def connect(self):
+        if self.state in ['connecting', 'connected']:
+            return
+
+        self.state = 'connecting'
         self.manager.connect()   # Ensure connected
         if self.manager.state == 'open':
             self.handle_open()
