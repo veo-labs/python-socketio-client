@@ -131,9 +131,11 @@ class Parser(object):
             attachments.append(data)
             ret = {'_placeholder': True, 'num': len(attachments) - 1}
         elif isinstance(data, list):
-            ret = [self.deconstruct_data(item, attachments) for item in data]
+            ret = [self.deconstruct_data(item, attachments)[0]
+                   for item in data]
         elif isinstance(data, dict):
-            ret = {key: self.deconstruct_data(value, attachments) for key, value in six.iteritems(data)}
+            ret = {key: self.deconstruct_data(value, attachments)[0]
+                   for key, value in six.iteritems(data)}
         return ret, attachments
 
     def data_contains_binary(self, data):
