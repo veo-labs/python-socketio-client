@@ -1,8 +1,8 @@
 from socketio_client.manager import Manager
 
 import gevent
-import gevent.monkey
-gevent.monkey.patch_all()
+from gevent import monkey
+monkey.patch_socket()
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
