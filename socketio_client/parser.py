@@ -129,7 +129,10 @@ class Parser(object):
 
         return [bytes] + attachments
 
-    def deconstruct_data(self, data, attachments=[]):
+    def deconstruct_data(self, data, attachments=None):
+        if attachments is None:
+            attachments = []
+
         ret = data
         if isinstance(data, bytearray):
             attachments.append(data)
