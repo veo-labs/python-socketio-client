@@ -106,13 +106,17 @@ class Parser(object):
         return ret
 
     def encode(self, packet):
-        bytes = six.text_type(packet.type)
-        if packet.type in [Packet.BINARY_EVENT, Packet.BINARY_ACK]:
-            data, attachments = self.deconstruct_data(packet.data)
+        bytes = six.text_type()
+        data, attachments = self.deconstruct_data(packet.data)
+
+        if attachments:
             bytes += six.text_type(len(attachments)) + '-'
-        else:
-            data = packet.data
-            attachments = []
+            if packet.type == Packet.EVENT:
+                packet.type = Packet.BINARY_EVENT
+            elif packet.type == Packet.ACK:
+                packet.type = Packet.BINARY_ACK
+
+        bytes = six.text_type(packet.type) + bytes
 
         if packet.namespace and packet.namespace != '/':
             bytes += packet.namespace
@@ -130,22 +134,13 @@ class Parser(object):
         if isinstance(data, bytearray):
             attachments.append(data)
             ret = {'_placeholder': True, 'num': len(attachments) - 1}
-        elif isinstance(data, list):
+        elif isinstance(data, (tuple, list)):
             ret = [self.deconstruct_data(item, attachments)[0]
                    for item in data]
         elif isinstance(data, dict):
             ret = {key: self.deconstruct_data(value, attachments)[0]
                    for key, value in six.iteritems(data)}
         return ret, attachments
-
-    def data_contains_binary(self, data):
-        if isinstance(data, bytearray):
-            return True
-        elif isinstance(data, list):
-            return any([self.data_contains_binary(item) for item in data])
-        elif isinstance(data, dict):
-            return any([self.data_contains_binary(item) for item in six.itervalues(data)])
-        return False
 
 class ParserException(Exception):
     pass

@@ -84,8 +84,7 @@ class Socket(object):
         """
         logger.debug("Sending event: %s", args)
 
-        type = Packet.BINARY_EVENT if self.manager.parser.data_contains_binary(args) else Packet.EVENT
-        packet = Packet(type=type, data=args)
+        packet = Packet(type=Packet.EVENT, data=args)
 
         callback = kwargs.get('callback', None)
         if callback:
@@ -169,8 +168,7 @@ class Socket(object):
 
             callback.sent = True
             logger.debug("Sending ack: %s", args)
-            type = Packet.BINARY_ACK if self.manager.parser.data_contains_binary(args) else Packet.ACK
-            self.send_packet(Packet(type=type, id=id, data=args))
+            self.send_packet(Packet(type=Packet.ACK, id=id, data=args))
         callback.sent = False
 
         return callback
