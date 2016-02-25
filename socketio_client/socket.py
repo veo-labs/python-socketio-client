@@ -168,7 +168,7 @@ class Socket(object):
                 return
 
             callback.sent = True
-            logger.warning("Sending ack: %s", args)
+            logger.debug("Sending ack: %s", args)
             type = Packet.BINARY_ACK if self.manager.parser.data_contains_binary(args) else Packet.ACK
             self.send_packet(Packet(type=type, id=id, data=args))
         callback.sent = False
