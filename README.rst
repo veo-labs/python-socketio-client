@@ -26,8 +26,8 @@ Example
     from socketio_client.manager import Manager
 
     import gevent
-    import gevent.monkey
-    gevent.monkey.patch_all()
+    from gevent import monkey;
+    monkey.patch_socket()
 
     io = Manager('localhost', 8000)
     chat = io.socket('/chat')
