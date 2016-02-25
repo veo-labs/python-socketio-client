@@ -21,7 +21,7 @@ frameworks are welcome for future versions.
 Example
 -------
 
-::
+.. code-block:: python
 
     from socketio_client.manager import Manager
 
