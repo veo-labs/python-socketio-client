@@ -142,9 +142,9 @@ class Parser(object):
         if isinstance(data, bytearray):
             return True
         elif isinstance(data, list):
-            return functools.reduce(lambda a, b: a or b, [self.data_contains_binary(item) for item in data], False)
+            return any([self.data_contains_binary(item) for item in data])
         elif isinstance(data, dict):
-            return functools.reduce(lambda a, b: a or b, [self.data_contains_binary(item) for item in six.itervalues(data)], False)
+            return any([self.data_contains_binary(item) for item in six.itervalues(data)])
         return False
 
 class ParserException(Exception):
