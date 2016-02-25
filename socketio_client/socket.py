@@ -4,6 +4,7 @@ from .parser import Packet
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Socket(object):
     def __init__(self, namespace, manager):
         self.namespace = namespace
@@ -84,7 +85,10 @@ class Socket(object):
         """
         logger.debug("Sending event: %s", args)
 
-        type = Packet.BINARY_EVENT if self.manager.parser.data_contains_binary(args) else Packet.EVENT
+        if self.manager.parser.data_contains_binary(args):
+            type = Packet.BINARY_EVENT
+        else:
+            type = Packet.EVENT
         packet = Packet(type=type, data=args)
 
         callback = kwargs.get('callback', None)
@@ -149,7 +153,7 @@ class Socket(object):
     def handle_ack(self, packet):
         args = packet.data or []
         logger.debug("Received ack: %s", args)
-        
+
         try:
             callback = self.acks.pop(packet.id)
         except KeyError:
@@ -169,9 +173,11 @@ class Socket(object):
 
             callback.sent = True
             logger.warning("Sending ack: %s", args)
-            type = Packet.BINARY_ACK if self.manager.parser.data_contains_binary(args) else Packet.ACK
+            if self.manager.parser.data_contains_binary(args):
+                type = Packet.BINARY_ACK
+            else:
+                type = Packet.ACK
             self.send_packet(Packet(type=type, id=id, data=args))
         callback.sent = False
 
         return callback
-

@@ -6,7 +6,6 @@ written by Miguel Grinberg and available under the MIT license at
 https://github.com/miguelgrinberg/python-socketio
 """
 
-from engineio_client.emitter import Emitter
 import six
 import re
 import json
@@ -15,14 +14,15 @@ import functools
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Packet(object):
-    CONNECT      = 0
-    DISCONNECT   = 1
-    EVENT        = 2
-    ACK          = 3
-    ERROR        = 4
+    CONNECT = 0
+    DISCONNECT = 1
+    EVENT = 2
+    ACK = 3
+    ERROR = 4
     BINARY_EVENT = 5
-    BINARY_ACK   = 6
+    BINARY_ACK = 6
 
     def __init__(self, type=None, data=None, namespace=None, id=None):
         self.type = type
@@ -43,15 +43,17 @@ class Packet(object):
         }[self.type]
 
     def __str__(self):
-        return ' - '.join([str(i) for i in [self.type_string, self.id, self.namespace, self.data] if i])
+        fields = (self.type_string, self.id, self.namespace, self.data)
+        return ' - '.join([str(i) for i in fields if i])
 
 PATTERN = '^'
-PATTERN += '([0-6])'         # type
-PATTERN += '(?:(\d+)-)?'     # number of attachments (optional)
-PATTERN += '(?:(/[^,]+),?)?' # namespace (optional)
-PATTERN += '(\d*)'           # message id (optional)
-PATTERN += '(.*)'            # data
+PATTERN += '([0-6])'          # type
+PATTERN += '(?:(\d+)-)?'      # number of attachments (optional)
+PATTERN += '(?:(/[^,]+),?)?'  # namespace (optional)
+PATTERN += '(\d*)'            # message id (optional)
+PATTERN += '(.*)'             # data
 PATTERN += '$'
+
 
 class Parser(object):
     def __init__(self):
@@ -65,8 +67,10 @@ class Parser(object):
 
     def decode(self, bytes):
         if not self.packet:
-            packet_type, num_attachments, namespace, packet_id, data = self.decode_packet(bytes)
-            self.packet = Packet(type=packet_type, namespace=namespace, id=packet_id)
+            packet_type, num_attachments, namespace, packet_id, data =\
+                self.decode_packet(bytes)
+            self.packet = Packet(type=packet_type, namespace=namespace,
+                                 id=packet_id)
             self.raw_data = data
             self.num_attachments = num_attachments
         else:
@@ -83,14 +87,15 @@ class Parser(object):
     def decode_packet(self, bytes):
         matches = re.findall(PATTERN, bytes)
         if not matches:
-            raise ParserException("Decoded packet is invalid: %s" % repr(bytes))
+            msg = "Decoded packet is invalid: %s" % repr(bytes)
+            raise ParserException(msg)
 
         items = matches[0]
-        packet_type     = int(items[0])
+        packet_type = int(items[0])
         num_attachments = int(items[1]) if items[1] else 0
-        namespace       = items[2]
-        packet_id       = int(items[3]) if items[3] else None
-        data            = json.loads(items[4]) if items[4] else None
+        namespace = items[2]
+        packet_id = int(items[3]) if items[3] else None
+        data = json.loads(items[4]) if items[4] else None
 
         return packet_type, num_attachments, namespace, packet_id, data
 
@@ -99,10 +104,12 @@ class Parser(object):
         if isinstance(data, list):
             ret = [self.construct_data(item, attachments) for item in data]
         elif isinstance(data, dict):
-            if data.get('_placeholder', False) and 0 <= data.get('num', -1) < len(attachments):
+            valid_num = (0 <= data.get('num', -1) < len(attachments))
+            if data.get('_placeholder', False) and valid_num:
                 ret = bytearray(attachments[data['num']])
             else:
-                ret = {key: self.construct_data(value, attachments) for key, value in six.iteritems(data)}
+                ret = {key: self.construct_data(value, attachments)
+                       for key, value in six.iteritems(data)}
         return ret
 
     def encode(self, packet):
@@ -133,21 +140,30 @@ class Parser(object):
         elif isinstance(data, list):
             ret = [self.deconstruct_data(item, attachments) for item in data]
         elif isinstance(data, dict):
-            ret = {key: self.deconstruct_data(value, attachments) for key, value in six.iteritems(data)}
+            ret = {key: self.deconstruct_data(value, attachments)
+                   for key, value in six.iteritems(data)}
         return ret, attachments
 
     def data_contains_binary(self, data):
         if isinstance(data, bytearray):
             return True
         elif isinstance(data, list):
-            return functools.reduce(lambda a, b: a or b, [self.data_contains_binary(item) for item in data], False)
+            return functools.reduce(
+                lambda a, b: a or b,
+                [self.data_contains_binary(item) for item in data],
+                False)
         elif isinstance(data, dict):
-            return functools.reduce(lambda a, b: a or b, [self.data_contains_binary(item) for item in six.itervalues(data)], False)
+            return functools.reduce(
+                lambda a, b: a or b,
+                [self.data_contains_binary(item)
+                 for item in six.itervalues(data)],
+                False)
         return False
+
 
 class ParserException(Exception):
     pass
 
+
 class PacketException(Exception):
     pass
-

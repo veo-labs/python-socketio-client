@@ -7,15 +7,26 @@ import gevent
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Manager(Emitter):
-    def __init__(self, hostname, port, reconnection=True, reconnection_delay=3.0,
-        auto_connect=True, parser=None, **kwargs):
+    def __init__(self, hostname, port, reconnection=True,
+                 reconnection_delay=3.0, auto_connect=True, parser=None,
+                 **kwargs):
         """
-        hostname:               Hostname of the server
-        port:                   Port of the server
-        reconnection:           Automatically reconnect after disconnect
-        reconnection_delay:     How long to wait between reconnections float in seconds
-        auto_connect:           Automatically connect at creation
+        :param hostname:
+            Hostname of the server.
+
+        :param port:
+           Port of the server.
+
+        :param reconnection:
+            Automatically reconnect after disconnect.
+
+        :param reconnection_delay:
+            How long to wait between reconnections float in seconds.
+
+        :param auto_connect:
+            Automatically connect at creation.
         """
         super(Manager, self).__init__()
 
@@ -27,7 +38,7 @@ class Manager(Emitter):
         self.parser = parser or Parser()
         self.engine_kwargs = kwargs
         self.engine_kwargs.setdefault('path', '/socket.io')
-        
+
         self.state = 'closed'
         self.sockets = set()
         self.engine = None
@@ -45,7 +56,8 @@ class Manager(Emitter):
         self.state = 'opening'
         self.skip_reconnect(False)
 
-        self.engine = EngineIOClient(self.hostname, self.port, **self.engine_kwargs)
+        self.engine = EngineIOClient(self.hostname, self.port,
+                                     **self.engine_kwargs)
         self.engine.on('open', self.handle_open)
         self.engine.on('error', self.handle_error)
         self.engine.on('message', self.handle_message)
@@ -112,13 +124,14 @@ class Manager(Emitter):
     def handle_message(self, message):
         if self.state != 'open':
             return
-        
+
         try:
             packet = self.parser.decode(message)
             if packet:
                 self.handle_packet(packet)
         except (ParserException, PacketException) as e:
-            logger.warning("Received invalid message or sequence, ignoring: %s", e)
+            msg = "Received invalid message or sequence, ignoring: %s", e
+            logger.warning(msg)
 
     def handle_packet(self, packet):
         if self.state != 'open':
@@ -149,7 +162,7 @@ class Manager(Emitter):
 
         logger.debug("Reconnect")
         self.connect()
-    
+
     def reconnect(self):
         logger.debug("Delay reconnect")
         if self.reconnecting:
@@ -161,7 +174,8 @@ class Manager(Emitter):
             return
 
         self.reconnecting = True
-        self.reconnect_task = self.start_task(self.do_reconnect, delay=self.reconnection_delay)
+        self.reconnect_task = self.start_task(
+            self.do_reconnect, delay=self.reconnection_delay)
 
     def start_task(self, func, delay=0, *args, **kwargs):
         return gevent.spawn_later(delay, func, *args, **kwargs)
@@ -169,4 +183,3 @@ class Manager(Emitter):
     def stop_task(self, task):
         if task:
             task.kill(False)
-
