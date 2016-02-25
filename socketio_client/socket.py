@@ -1,4 +1,5 @@
 from engineio_client.emitter import Emitter
+from engineio_client.utils import format_long
 from .parser import Packet
 
 import logging
@@ -79,10 +80,10 @@ class Socket(object):
 
     def emit(self, *args, **kwargs):
         """Send event-type message
-        If callback is sent, it will be called when the server want to respond
-        to the event (maybe never).
+        If callback is provided, it will be called when the server want to
+        respond to the event (maybe never).
         """
-        logger.debug("Sending event: %s", args)
+        logger.debug(format_long("Sending event: %s", args))
 
         packet = Packet(type=Packet.EVENT, data=args)
 
@@ -136,7 +137,7 @@ class Socket(object):
 
     def handle_event(self, packet):
         args = packet.data or []
-        logger.debug("Received event: %s", args)
+        logger.debug(format_long("Received event: %s", args))
 
         kwargs = {}
         if packet.id:
@@ -147,7 +148,7 @@ class Socket(object):
 
     def handle_ack(self, packet):
         args = packet.data or []
-        logger.debug("Received ack: %s", args)
+        logger.debug(format_long("Received ack: %s", args))
         
         try:
             callback = self.acks.pop(packet.id)
@@ -167,7 +168,7 @@ class Socket(object):
                 return
 
             callback.sent = True
-            logger.debug("Sending ack: %s", args)
+            logger.debug(format_long("Sending ack: %s", args))
             self.send_packet(Packet(type=Packet.ACK, id=id, data=args))
         callback.sent = False
 

@@ -1,5 +1,6 @@
 from engineio_client.emitter import Emitter
 from engineio_client.client import Client as EngineIOClient
+from engineio_client.utils import format_long
 from .parser import Parser, ParserException, PacketException
 from .socket import Socket
 import gevent
@@ -61,7 +62,7 @@ class Manager(Emitter):
             self.engine.close()
 
     def send_packet(self, packet):
-        logger.debug("Sending packet: %s", packet)
+        logger.debug(format_long("Sending packet: %s", packet))
         items = self.parser.encode(packet)
         for item in items:
             self.engine.send(item)
@@ -124,7 +125,7 @@ class Manager(Emitter):
         if self.state != 'open':
             return
 
-        logger.debug("Received packet: %s", packet)
+        logger.debug(format_long("Received packet: %s", packet))
         self.emit('packet', packet)
 
     def handle_close(self):
