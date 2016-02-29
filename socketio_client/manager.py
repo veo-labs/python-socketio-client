@@ -64,8 +64,10 @@ class Manager(Emitter):
     def send_packet(self, packet):
         logger.debug(format_long("Sending packet: %s", packet))
         items = self.parser.encode(packet)
+        binary = False
         for item in items:
-            self.engine.send(item)
+            self.engine.send(item, binary)
+            binary = True   # Attachments are always considered binary
 
     def socket(self, namespace):
         return Socket(namespace, self)
