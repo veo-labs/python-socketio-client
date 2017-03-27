@@ -39,6 +39,18 @@ class Manager(Emitter):
         if self.auto_connect:
             self.connect()
 
+    def setup_engine_handlers(self):
+        self.engine.on('open', self.handle_open)
+        self.engine.on('error', self.handle_error)
+        self.engine.on('message', self.handle_message)
+        self.engine.on('close', self.handle_close)
+
+    def cleanup_engine_handlers(self):
+        self.engine.off('open', self.handle_open)
+        self.engine.off('error', self.handle_error)
+        self.engine.off('message', self.handle_message)
+        self.engine.off('close', self.handle_close)
+
     def connect(self):
         if self.state in ['opening', 'open']:
             return
@@ -47,10 +59,7 @@ class Manager(Emitter):
         self.skip_reconnect(False)
 
         self.engine = EngineIOClient(self.hostname, self.port, **self.engine_kwargs)
-        self.engine.on('open', self.handle_open)
-        self.engine.on('error', self.handle_error)
-        self.engine.on('message', self.handle_message)
-        self.engine.on('close', self.handle_close)
+        self.setup_engine_handlers()
         self.engine.open()
 
     def disconnect(self):
@@ -76,6 +85,7 @@ class Manager(Emitter):
         self.sockets.add(socket)
 
     def detach_socket(self, socket):
+        logger.debug("Detach socket")
         self.sockets.discard(socket)
         if not self.sockets:
             self.disconnect()
@@ -131,12 +141,15 @@ class Manager(Emitter):
         self.emit('packet', packet)
 
     def handle_close(self):
-        if self.state != 'open':
+        logger.debug("Handle close")
+        if self.state != 'closing' and self.state != 'open':
             return
 
         logger.debug("Disconnected")
         self.state = 'closed'
         self.emit('close')
+
+        self.cleanup_engine_handlers()
 
         if self.reconnection:
             self.reconnect()

@@ -19,17 +19,21 @@ class Socket(object):
         if self.manager.auto_connect:
             self.connect()
 
-    def setup_handlers(self):
+    def setup_manager_handlers(self):
         self.manager.attach_socket(self)
         self.manager.on('open', self.handle_open)
         self.manager.on('close', self.handle_close)
         self.manager.on('packet', self.handle_packet)
 
-    def cleanup_handlers(self):
-        self.manager.detach_socket(self)
+    def cleanup_manager_handlers(self):
         self.manager.off('open', self.handle_open)
         self.manager.off('close', self.handle_close)
         self.manager.off('packet', self.handle_packet)
+        self.manager.detach_socket(self)
+    
+    def cleanup_handlers(self):
+        self.socket_handlers.removeAllListeners()
+        self.event_handlers.removeAllListeners()
 
     @property
     def id(self):
@@ -44,7 +48,7 @@ class Socket(object):
         if self.manager.state == 'open':
             self.handle_open()
         self.socket_handlers.emit('connecting')
-        self.setup_handlers()
+        self.setup_manager_handlers()
 
     def disconnect(self):
         if self.state not in ['connecting', 'connected']:
@@ -52,6 +56,7 @@ class Socket(object):
 
         logger.debug("Sending disconnect")
         self.send_packet(Packet(Packet.DISCONNECT))
+        self.cleanup_manager_handlers()
         self.handle_close()
         self.cleanup_handlers()
 
@@ -133,7 +138,9 @@ class Socket(object):
 
     def handle_disconnect(self):
         logger.debug("Received disconnect")
+        self.cleanup_manager_handlers()
         self.handle_close()
+        self.cleanup_handlers()
 
     def handle_event(self, packet):
         args = packet.data or []
