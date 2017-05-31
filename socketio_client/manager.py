@@ -9,9 +9,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Manager(Emitter):
-    def __init__(self, hostname, port, reconnection=True, reconnection_delay=3.0,
+    def __init__(self, scheme, hostname, port, reconnection=True, reconnection_delay=3.0,
         auto_connect=True, parser=None, **kwargs):
         """
+        scheme:                 URI scheme
         hostname:               Hostname of the server
         port:                   Port of the server
         reconnection:           Automatically reconnect after disconnect
@@ -20,6 +21,7 @@ class Manager(Emitter):
         """
         super(Manager, self).__init__()
 
+        self.scheme = scheme
         self.hostname = hostname
         self.port = port
         self.reconnection = reconnection
@@ -58,7 +60,7 @@ class Manager(Emitter):
         self.state = 'opening'
         self.skip_reconnect(False)
 
-        self.engine = EngineIOClient(self.hostname, self.port, **self.engine_kwargs)
+        self.engine = EngineIOClient(self.scheme, self.hostname, self.port, **self.engine_kwargs)
         self.setup_engine_handlers()
         self.engine.open()
 
