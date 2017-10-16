@@ -29,7 +29,7 @@ Example
     from gevent import monkey;
     monkey.patch_socket()
 
-    io = Manager('localhost', 8000)
+    io = Manager('http', 'localhost', 8000)
     chat = io.socket('/chat')
 
     @chat.on_connect()
