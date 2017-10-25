@@ -7,7 +7,7 @@ monkey.patch_socket()
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-io = Manager('localhost', 8000, auto_connect=False)
+io = Manager('http', 'localhost', 8000, auto_connect=False)
 chat = io.socket('/chat')
 
 @chat.on('welcome')
