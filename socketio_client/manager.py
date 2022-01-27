@@ -30,7 +30,7 @@ class Manager(Emitter):
         self.parser = parser or Parser()
         self.engine_kwargs = kwargs
         self.engine_kwargs.setdefault('path', '/socket.io')
-        
+
         self.state = 'closed'
         self.sockets = set()
         self.engine = None
@@ -127,7 +127,7 @@ class Manager(Emitter):
     def handle_message(self, message):
         if self.state != 'open':
             return
-        
+
         try:
             packet = self.parser.decode(message)
             if packet:
@@ -167,7 +167,7 @@ class Manager(Emitter):
 
         logger.debug("Reconnect")
         self.connect()
-    
+
     def reconnect(self):
         logger.debug("Delay reconnect")
         if self.reconnecting:
@@ -186,5 +186,4 @@ class Manager(Emitter):
 
     def stop_task(self, task):
         if task:
-            task.kill(False)
-
+            task.kill(block=False)
